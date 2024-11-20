@@ -3,7 +3,7 @@ import pandas as pd
 import plotly.express as px
 
 # Load data
-data = pd.read_csv('C:\\Users\\jacki\\source\\repos\\PythonApplication1\\PythonApplication1\\3270 data.csv')
+data = pd.read_csv('3270 data.csv')  # Use relative path
 
 # Ensure 'ID' column is treated as string
 data['ID'] = data['ID'].astype(str)
@@ -81,3 +81,4 @@ if search_term:
                               labels={'x': 'Metrics', 'y': 'Values'}, title=f"{player_data['Name']} Overview", color_discrete_sequence=['orange'])
         overview_fig.update_layout(title_font_color='purple', font=dict(color='purple'))
         st.sidebar.plotly_chart(overview_fig)
+
