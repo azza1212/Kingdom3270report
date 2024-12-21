@@ -26,8 +26,8 @@ data['Total Kills'] = data['T1 Kills'] + data['T2 Kills'] + data['T3 Kills'] + d
 # Revised DKP formula using available columns
 data['DKP'] = (data['T4 Kills'] * 1) + (data['T5 Kills'] * 2) + (data['Deads'] * 2)
 
-# Calculate KD Power and determine Seed from seed data
-top_300_power = seed_df.nlargest(300, 'Power')['Power'].sum()
+# Calculate KD Power and determine Seed from seed data using 'score'
+top_300_power = seed_df.nlargest(300, 'score')['score'].sum()
 if top_300_power >= 10000000000:  # Adjust these thresholds based on your specific criteria
     seed = 'A'
 elif top_300_power >= 5000000000:
@@ -58,50 +58,4 @@ with st.container():
 # Contributions section using corrected column names
 with st.container():
     st.markdown('<h2 style="color: purple;">Contributions</h2>', unsafe_allow_html=True)
-    fig2 = px.bar(data.nlargest(10, 'Rss Gathered'), x='Name', y='Rss Gathered', title='Top 10 Players by RSS Gathered',
-                  color_discrete_sequence=['orange'])
-    fig2.update_layout(title_font_color='purple', font=dict(color='purple'))
-    st.plotly_chart(fig2)
-
-    fig3 = px.bar(data.nlargest(10, 'Rss Assistance'), x='Name', y='Rss Assistance', title='Top 10 Players by RSS Assistance',
-                  color_discrete_sequence=['orange'])
-    fig3.update_layout(title_font_color='purple', font=dict(color='purple'))
-    st.plotly_chart(fig3)
-
-    fig4 = px.bar(data.nlargest(10, 'Helps'), x='Name', y='Helps', title='Top 10 Players by Helps',
-                  color_discrete_sequence=['orange'])
-    fig4.update_layout(title_font_color='purple', font=dict(color='purple'))
-    st.plotly_chart(fig4)
-
-# DKP section using revised formula
-with st.container():
-    st.markdown('<h2 style="color: purple;">DKP Rankings</h2>', unsafe_allow_html=True)
-    dkp_data = data.sort_values(by='DKP', ascending=False).head(10)
-    fig5 = px.bar(dkp_data, x='Name', y='DKP', title='Top Players by DKP',
-                  color_discrete_sequence=['orange'])
-    fig5.update_layout(title_font_color='purple', font=dict(color='purple'))
-    st.plotly_chart(fig5)
-
-# Sidebar for search functionality
-st.sidebar.title("Search Player")
-st.sidebar.markdown(
-    """
-    <style>
-    .sidebar .sidebar-content {
-        background-color: orange;
-    }
-    </style>
-    """, unsafe_allow_html=True
-)
-search_term = st.sidebar.text_input("Enter Player Name or ID:")
-if search_term:
-    results = data[data['Name'].str.contains(search_term, case=False) | data['ID'].str.contains(search_term)]
-    st.sidebar.write(results)
-    
-    if not results.empty:
-        st.sidebar.markdown("### Player Overview")
-        player_data = results.iloc[0]  # Taking the first match
-        overview_fig = px.bar(x=['T4 Kills', 'T5 Kills', 'Deads', 'DKP'], y=[player_data['T4 Kills'], player_data['T5 Kills'], player_data['Deads'], player_data['DKP']], 
-                              labels={'x': 'Metrics', 'y': 'Values'}, title=f"{player_data['Name']} Overview", color_discrete_sequence=['orange'])
-        overview_fig.update_layout(title_font_color='purple', font=dict(color='purple'))
-        st.sidebar.plotly_chart(overview_fig)
+    fig2 = px.bar(data.nlargest(10, 'Rss Gathered'), x='Name', y='Rss Gathered',
