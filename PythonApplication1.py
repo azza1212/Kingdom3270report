@@ -1,14 +1,22 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import json
 
-# Load data
-data = pd.read_csv('3270 data.csv')  # Use relative path
+# Load JSON data
+def load_json(json_file):
+    with open(json_file, 'r', encoding='utf-8-sig', errors='ignore') as f:
+        data = json.load(f)
+    return data
+
+# Convert JSON data to DataFrame
+json_data = load_json('rok_data 221224.json')
+data = pd.DataFrame(json_data)
 
 # Ensure 'ID' column is treated as string
 data['ID'] = data['ID'].astype(str)
 
-# Calculate total kills using the correct column names from your CSV
+# Calculate total kills using the correct column names from your JSON
 data['Total Kills'] = data['T1 Kills'] + data['T2 Kills'] + data['T3 Kills'] + data['T4 Kills'] + data['T5 Kills']
 
 # Revised DKP formula using available columns
@@ -81,4 +89,3 @@ if search_term:
                               labels={'x': 'Metrics', 'y': 'Values'}, title=f"{player_data['Name']} Overview", color_discrete_sequence=['orange'])
         overview_fig.update_layout(title_font_color='purple', font=dict(color='purple'))
         st.sidebar.plotly_chart(overview_fig)
-
