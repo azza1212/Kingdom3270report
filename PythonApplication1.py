@@ -26,8 +26,8 @@ data['Total Kills'] = data['T1 Kills'] + data['T2 Kills'] + data['T3 Kills'] + d
 # Revised DKP formula using available columns
 data['DKP'] = (data['T4 Kills'] * 1) + (data['T5 Kills'] * 2) + (data['Deads'] * 2)
 
-# Calculate KD Power and determine Seed from seed data using 'score'
-top_300_power = seed_df.nlargest(300, 'score')['score'].sum()
+# Calculate KD Power and determine Seed from seed data using 'Score'
+top_300_power = seed_df.nlargest(300, 'Score')['Score'].sum()
 if top_300_power >= 10000000000:  # Adjust these thresholds based on your specific criteria
     seed = 'A'
 elif top_300_power >= 5000000000:
