@@ -105,22 +105,3 @@ if search_term:
                               labels={'x': 'Metrics', 'y': 'Values'}, title=f"{player_data['Name']} Overview", color_discrete_sequence=['orange'])
         overview_fig.update_layout(title_font_color='purple', font=dict(color='purple'))
         st.sidebar.plotly_chart(overview_fig)
-  fig2 = px.bar(data.nlargest(10, 'Rss Gathered'), x='Name', y='Rss Gathered', title='Top 10 Players# Contributions section using corrected column names
-with st.container():
-    st.markdown('<h2 style="color: purple;">Contributions</h2>', unsafe_allow_html=True)
-    fig2 = px.bar(data.nlargest(10, 'Rss Gathered'), x='Name', y='Rss Gathered', title='Top 10 Players by RSS Gathered',
-                  color_discrete_sequence=['orange'])
-    fig2.update_layout(title_font_color='purple', font=dict(color='purple'))
-    st.plotly_chart(fig2)
-
-    fig3 = px.bar(data.nlargest(10, 'Rss Assistance'), x='Name', y='Rss Assistance', title='Top 10 Players by RSS Assistance',
-                  color_discrete_sequence=['orange'])
-    fig3.update_layout(title_font_color='purple', font=dict(color='purple'))
-    st.plotly_chart(fig3)
-
-    fig4 = px.bar(data.nlargest(10, 'Helps'), x='Name', y='Helps', title='Top 10 Players by Helps',
-                  color_discrete_sequence=['orange'])
-    fig4.update_layout(title_font_color='purple', font=dict(color='purple'))
-    st.plotly_chart(fig4)
-
-
