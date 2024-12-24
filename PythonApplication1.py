@@ -41,6 +41,12 @@ st.markdown('<h1 style="color: orange;">Kingdom 3270 Report</h1>', unsafe_allow_
 # KD Power and Seed
 st.markdown(f'<h2 style="color: purple;">KD Power: {top_300_power:,} | Seed: {seed}</h2>', unsafe_allow_html=True)
 
+# Full Kingdom List Section
+with st.container():
+    st.markdown('<h2 style="color: purple;">Full Kingdom List (Top 300)</h2>', unsafe_allow_html=True)
+    full_kingdom_data = data.sort_values(by='Power', ascending=False)
+    st.write(full_kingdom_data[['ID', 'Name', 'Power', 'Killpoints', 'Deads', 'T1 Kills', 'T2 Kills', 'T3 Kills', 'T4 Kills', 'T5 Kills']].head(300))
+
 # Power Ranking section sorted by Power
 with st.container():
     st.markdown('<h2 style="color: purple;">Power Ranking</h2>', unsafe_allow_html=True)
@@ -82,12 +88,6 @@ with st.container():
     fig5.update_layout(title_font_color='purple', font=dict(color='purple'))
     st.plotly_chart(fig5)
 
-# Full Kingdom List Section
-with st.container():
-    st.markdown('<h2 style="color: purple;">Full Kingdom List (Top 300)</h2>', unsafe_allow_html=True)
-    full_kingdom_data = data.sort_values(by='Power', ascending=False)
-    st.write(full_kingdom_data[['ID', 'Name', 'Power', 'Killpoints', 'Deads', 'T1 Kills', 'T2 Kills', 'T3 Kills', 'T4 Kills', 'T5 Kills']].head(300))
-
 # Sidebar for search functionality
 st.sidebar.title("Search Player")
 st.sidebar.markdown(
@@ -112,7 +112,6 @@ if search_term:
         overview_fig.update_layout(title_font_color='purple', font=dict(color='purple'))
         st.sidebar.plotly_chart(overview_fig)
 
-        player_data = results.iloc[0]  # Taking the first match
         overview_fig = px.bar(x=['T4 Kills', 'T5 Kills', 'Deads', 'DKP'], y=[player_data['T4 Kills'], player_data['T5 Kills'], player_data['Deads'], player_data['DKP']], 
                               labels={'x': 'Metrics', 'y': 'Values'}, title=f"{player_data['Name']} Overview", color_discrete_sequence=['orange'])
         overview_fig.update_layout(title_font_color='purple', font=dict(color='purple'))
