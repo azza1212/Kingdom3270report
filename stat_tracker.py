@@ -6,7 +6,6 @@ import json
 def stat_tracker():
     st.header("STAT Tracker")
     
-    # Existing code for the 3270dkp page content
     # Load JSON data
     def load_json(json_file):
         with open(json_file, 'r', encoding='utf-8-sig', errors='ignore') as f:
@@ -17,21 +16,22 @@ def stat_tracker():
     json_data = load_json('rok_data 221224.json')
     data = pd.DataFrame(json_data)
 
-    # Load seed data
-    seed_data = load_json('SEED-221224.json')
-    seed_df = pd.DataFrame(seed_data)
-
     # Ensure 'ID' column is treated as string
     data['ID'] = data['ID'].astype(str)
 
-    # Calculate total kills using the correct column names from your JSON
+    # Calculate total kills
     data['Total Kills'] = data['T1 Kills'] + data['T2 Kills'] + data['T3 Kills'] + data['T4 Kills'] + data['T5 Kills']
 
-    # Revised DKP formula using available columns
+    # Revised DKP formula
     data['DKP'] = (data['T4 Kills'] * 1) + (data['T5 Kills'] * 2) + (data['Deads'] * 2)
 
-    # Calculate KD Power and determine Seed from seed data using 'Score'
-    top_300_power = seed_df.nlargest(300, 'Score')['Score'].sum()
+    # Remove duplicates based on 'ID' and 'Name'
+    data = data.drop_duplicates(subset=['ID', 'Name'], keep='first')
+
+    # Calculate KD Power directly from `rok_data`
+    top_300_power = data.nlargest(300, 'Power')['Power'].sum()
+
+    # Determine Seed based on KD Power
     if top_300_power >= 10000000000:  # Adjust these thresholds based on your specific criteria
         seed = 'A'
     elif top_300_power >= 5000000000:
@@ -115,3 +115,6 @@ def stat_tracker():
                                   labels={'x': 'Metrics', 'y': 'Values'}, title=f"{player_data['Name']} Overview", color_discrete_sequence=['orange'])
             overview_fig.update_layout(title_font_color='purple', font=dict(color='purple'))
             st.sidebar.plotly_chart(overview_fig)
+
+if __name__ == "__main__":
+    stat_tracker()
