@@ -35,6 +35,20 @@ def main():
         </style>
     """, unsafe_allow_html=True)
 
+    # Admin login functionality
+    if 'admin_logged_in' not in st.session_state:
+        st.session_state.admin_logged_in = False
+
+    with st.sidebar.expander("Admin Login", expanded=not st.session_state.admin_logged_in):
+        username = st.text_input("Username")
+        password = st.text_input("Password", type="password")
+        if st.button("Login"):
+            if username == "Leader" and password == "3270@#":  # Replace with your credentials
+                st.session_state.admin_logged_in = True
+                st.success("Successfully logged in as admin")
+            else:
+                st.error("Incorrect username or password")
+
     # Display the navigation options as buttons
     st.markdown('<div class="button-container">', unsafe_allow_html=True)
     
