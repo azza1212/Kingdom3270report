@@ -93,12 +93,12 @@ def stat_tracker():
 
     # Compare current data to baseline data
     comparison_data = current_df.merge(baseline_df, on='ID', suffixes=('_current', '_baseline'))
-    comparison_data = comparison_data.apply(lambda row: pd.Series(calculate_target_status(row)), axis=1)
-    
+    comparison_results = comparison_data.apply(lambda row: pd.Series(calculate_target_status(row)), axis=1)
+
     # Align the indexes to avoid length mismatch
-    comparison_data = comparison_data.reset_index(drop=True)
+    comparison_results = comparison_results.reset_index(drop=True)
     current_ids_names = current_df[['ID', 'Name']].reset_index(drop=True)
-    comparison_data = pd.concat([comparison_data, current_ids_names], axis=1)
+    comparison_data = pd.concat([comparison_results, current_ids_names], axis=1)
 
     # Display comparison data in Streamlit
     st.markdown('<h1 style="color: orange;">Kingdom 3270 Report</h1>', unsafe_allow_html=True)
