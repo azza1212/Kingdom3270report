@@ -50,15 +50,31 @@ def stat_tracker():
         else:
             goal = 0
 
+        # DKP-Power-ratio categories
+        if power <= 49999999:
+            dkp_power_ratio_goal = 0.15 * dkp_current
+            category = 'ELITE'
+        elif 50000000 <= power <= 79999999:
+            dkp_power_ratio_goal = 0.20 * dkp_current
+            category = 'EPIC'
+        elif power >= 80000000:
+            dkp_power_ratio_goal = 0.35 * dkp_current
+            category = 'LEGENDARY'
+        else:
+            dkp_power_ratio_goal = 0
+            category = 'UNKNOWN'
+
         return {
             "T4 Kills Change": t4_kills_change,
             "T5 Kills Change": t5_kills_change,
             "Deads Change": deads_change,
             "Power Change": power_change,
             "DKP Current": dkp_current,
-            "Goal": goal
+            "Goal": goal,
+            "DKP-Power Ratio Goal": dkp_power_ratio_goal,
+            "Category": category
         }
-
+        
     # Convert main JSON data to DataFrame
     baseline_data = load_json('rok_data 221224.json')
     current_data = load_json('Current_Rokdata.json')
@@ -72,7 +88,7 @@ def stat_tracker():
     # Calculate total kills for both datasets
     for df in [baseline_df, current_df]:
         df['Total Kills'] = df['T1 Kills'] + df['T2 Kills'] + df['T3 Kills'] + df['T4 Kills'] + df['T5 Kills']
-        df['DKP'] = (df['T4 Kills'] * 1) + (df['T5 Kills'] * 2) + (df['Deads'] * 2)
+        df['DKP'] = (df['T4 Kills'] * 1) + (df['T5 Kills'] * 2) + (df['Deads'] * 3)
         df.drop_duplicates(subset=['ID', 'Name'], keep='first', inplace=True)
 
     # Compare current data to baseline data
@@ -87,7 +103,7 @@ def stat_tracker():
     # Display comparison data in Streamlit
     st.markdown('<h1 style="color: orange;">Kingdom 3270 Report</h1>', unsafe_allow_html=True)
     st.markdown('<h2 style="color: purple;">Comparison of Current and Baseline Data</h2>', unsafe_allow_html=True)
-    st.write(comparison_data[['ID', 'Name', 'T4 Kills Change', 'T5 Kills Change', 'Deads Change', 'Power Change', 'DKP Current', 'Goal']])
+    st.write(comparison_data[['ID', 'Name', 'T4 Kills Change', 'T5 Kills Change', 'Deads Change', 'Power Change', 'DKP Current', 'Goal', 'DKP-Power Ratio Goal', 'Category']])
 
     # Your existing display logic
     # KD Power and Seed
@@ -167,3 +183,6 @@ def stat_tracker():
             st.sidebar.markdown("### Player Overview")
             player_data = results.iloc[0]  # Taking the first match
             overview_fig = px.bar(x=x, y=y, title="Overview Chart", labels={'x': 'Categories', 'y': 'Values'})
+
+# Call the function to run the app
+stat_tracker()
