@@ -10,7 +10,7 @@ from cryptography.hazmat.primitives import serialization, hashes
 logging.basicConfig(level=logging.INFO)
 
 # Use your verified TextChannel ID
-TEXT_CHANNEL_ID = 1269107769462755349  # Correct TextChannel ID
+CHANNEL_ID = 1269107769462755349  # Correct Channel ID to a TextChannel
 
 # Global event to track when the bot is ready
 bot_ready_event = threading.Event()
@@ -19,7 +19,7 @@ class MyClient(discord.Client):
     def __init__(self, *args, **kwargs):
         intents = discord.Intents.default()
         super().__init__(intents=intents, *args, **kwargs)
-        self.channel_id = TEXT_CHANNEL_ID
+        self.channel_id = CHANNEL_ID
         self.channel = None  # To store the channel once fetched
 
     async def on_ready(self):
@@ -31,7 +31,7 @@ class MyClient(discord.Client):
                 if channel.id == self.channel_id and isinstance(channel, discord.TextChannel):
                     self.channel = channel
                     break
-            if self.channel and isinstance(self.channel, discord.TextChannel):
+            if self.channel:
                 logging.info(f"Connected to text channel: {self.channel.name}")
                 bot_ready_event.set()
             else:
@@ -74,7 +74,7 @@ def decrypt_key():
         encrypted_message = enc_file.read()
 
     # Decrypt the message
-    decrypted_message = private_key.decrypt(  # Use private_key here
+    decrypted_message = private_key.decrypt(
         encrypted_message,
         padding.OAEP(
             mgf=padding.MGF1(algorithm=hashes.SHA256()),
