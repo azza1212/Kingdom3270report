@@ -12,12 +12,14 @@ logging.basicConfig(level=logging.INFO)
 # Use your verified TextChannel ID
 CHANNEL_ID = 1269107769462755349  # Correct TextChannel ID
 
-
 # Global event to track when the bot is ready
 bot_ready_event = threading.Event()
 
+# Global list to store bot responses
+bot_responses = []
+
 class MyClient(discord.Client):
-    _instance = None  # Singleton instance to ensure only one bot runs
+    _instance = None
 
     def __new__(cls, *args, **kwargs):
         if cls._instance is None:
@@ -27,6 +29,7 @@ class MyClient(discord.Client):
     def __init__(self, *args, **kwargs):
         if not hasattr(self, '_initialized'):
             intents = discord.Intents.default()
+            intents.messages = True  # Ensure the bot can receive message events
             super().__init__(intents=intents, *args, **kwargs)
             self.channel_id = CHANNEL_ID
             self.channel = None  # To store the channel once fetched
@@ -50,6 +53,11 @@ class MyClient(discord.Client):
             logging.error("Bot doesn't have permission to access the channels! Please check the channel permissions.")
         except discord.HTTPException as e:
             logging.error(f"HTTP error occurred: {e}")
+
+    async def on_message(self, message):
+        if message.author == self.user:
+            # Capture bot's own messages and store in global list
+            bot_responses.append(message.content)
 
     async def send_message_async(self, message):
         """Send a message asynchronously"""
@@ -75,7 +83,8 @@ def decrypt_key():
     # Load private key from file
     with open("private_key.pem", "rb") as private_file:
         private_key = serialization.load_pem_private_key(
-            private_file.read(), password=None
+            private_file.read(), 
+            password=None,
         )
 
     # Load the encrypted message from file
@@ -89,7 +98,7 @@ def decrypt_key():
             mgf=padding.MGF1(algorithm=hashes.SHA256()),
             algorithm=hashes.SHA256(),
             label=None,
-        ),
+        )
     )
 
     return decrypted_message.decode()
@@ -102,7 +111,6 @@ def run_bot():
         run_bot._client_started = True
         client = MyClient()
         client.run(decrypt_key())  # This runs the bot and manages its event loop
-
 
 def handle_request_title():
     """Handle Streamlit UI for title requests."""
@@ -122,6 +130,12 @@ def handle_request_title():
         if bot_ready_event.wait(timeout=30):  # Wait up to 30 seconds for the bot to be ready
             client.send_message_sync(message)
             st.success("Message sent successfully!")
+
+            # Display bot response
+            if bot_responses:
+                st.markdown(f"**Bot Response**: {bot_responses[-1]}")
+            else:
+                st.warning("No response from the bot yet.")
         else:
             st.warning("Bot is not ready yet. Try again after a moment.")
     elif message == "":
