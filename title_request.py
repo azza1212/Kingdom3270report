@@ -128,7 +128,7 @@ def handle_request_title():
             if fishybot_responses:
                 st.markdown(f"**FishyBot First Response**: {fishybot_responses[0]}")
 
-            time.sleep(15)  # Delay for the second response
+            time.sleep(45)  # Delay for the second response
 
             # Display the second FishyBot response
             if len(fishybot_responses) > 1:
