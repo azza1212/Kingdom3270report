@@ -12,15 +12,25 @@ logging.basicConfig(level=logging.INFO)
 # Use your verified TextChannel ID
 CHANNEL_ID = 1269107769462755349  # Correct TextChannel ID
 
+
 # Global event to track when the bot is ready
 bot_ready_event = threading.Event()
 
 class MyClient(discord.Client):
+    _instance = None  # Singleton instance to ensure only one bot runs
+
+    def __new__(cls, *args, **kwargs):
+        if cls._instance is None:
+            cls._instance = super(MyClient, cls).__new__(cls)
+        return cls._instance
+
     def __init__(self, *args, **kwargs):
-        intents = discord.Intents.default()
-        super().__init__(intents=intents, *args, **kwargs)
-        self.channel_id = CHANNEL_ID
-        self.channel = None  # To store the channel once fetched
+        if not hasattr(self, '_initialized'):
+            intents = discord.Intents.default()
+            super().__init__(intents=intents, *args, **kwargs)
+            self.channel_id = CHANNEL_ID
+            self.channel = None  # To store the channel once fetched
+            self._initialized = True
 
     async def on_ready(self):
         logging.info(f'Logged in as {self.user}')
@@ -84,12 +94,15 @@ def decrypt_key():
 
     return decrypted_message.decode()
 
-# Create and run the bot in a separate thread
+# Create and run the bot only once
 def run_bot():
     logging.info("Starting the bot...")
     global client
-    client = MyClient()
-    client.run(decrypt_key())  # This runs the bot and manages its event loop
+    if not hasattr(run_bot, '_client_started'):
+        run_bot._client_started = True
+        client = MyClient()
+        client.run(decrypt_key())  # This runs the bot and manages its event loop
+
 
 def handle_request_title():
     """Handle Streamlit UI for title requests."""
@@ -119,4 +132,3 @@ if __name__ == "__main__":
     bot_thread = threading.Thread(target=run_bot, daemon=True)
     bot_thread.start()
     handle_request_title()
-
