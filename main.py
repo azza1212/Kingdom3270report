@@ -1,8 +1,14 @@
 import streamlit as st
+import threading
 from stat_tracker import stat_tracker
 from AOO_Registration_Tool import aoo_registration_tool
 from gameplay_info import gameplay_info
 from contact_and_admin import contact_and_admin
+from title_request import run_bot, handle_request_title
+
+# Start the bot in a separate thread to avoid blocking Streamlit
+bot_thread = threading.Thread(target=run_bot, daemon=True)
+bot_thread.start()
 
 def main():
     st.title("Welcome to 3270 Data Center")
@@ -60,6 +66,8 @@ def main():
         st.session_state.page = "Gameplay Information"
     if st.button("Contact and Administration", key="contact_and_admin"):
         st.session_state.page = "Contact and Administration"
+    if st.button("Request Title", key="request_title"):
+        st.session_state.page = "Request Title"
 
     st.markdown('</div>', unsafe_allow_html=True)
 
@@ -76,6 +84,8 @@ def main():
         gameplay_info()
     elif st.session_state.page == "Contact and Administration":
         contact_and_admin()
+    elif st.session_state.page == "Request Title":
+        handle_request_title()
     else:
         st.write("Please select an option from the buttons above.")
 
