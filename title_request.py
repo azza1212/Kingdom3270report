@@ -10,7 +10,7 @@ from cryptography.hazmat.primitives import serialization, hashes
 logging.basicConfig(level=logging.INFO)
 
 # Use your verified TextChannel ID
-CHANNEL_ID = 1269107769462755349  # Correct Channel ID to a TextChannel
+CHANNEL_ID = 1269107769462755349  # Correct TextChannel ID
 
 # Global event to track when the bot is ready
 bot_ready_event = threading.Event()
@@ -92,8 +92,8 @@ def run_bot():
     client = MyClient()
     client.run(decrypt_key())  # This runs the bot and manages its event loop
 
-def main():
-    """Main function to run the Streamlit app."""
+def handle_request_title():
+    """Handle Streamlit UI for title requests."""
     st.title('Request title')
 
     # Get message input from the user
@@ -119,4 +119,4 @@ def main():
 if __name__ == "__main__":
     bot_thread = threading.Thread(target=run_bot, daemon=True)
     bot_thread.start()
-    main()
+    handle_request_title()
