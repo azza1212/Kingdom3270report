@@ -1,5 +1,6 @@
 import streamlit as st
 import discord
+import asyncio
 import threading
 import logging
 from cryptography.hazmat.primitives.asymmetric import rsa, padding
@@ -42,8 +43,12 @@ class MyClient(discord.Client):
     async def send_message_async(self, message):
         """Send a message asynchronously"""
         if self.channel:
-            logging.info(f"Sending message: {message}")
-            await self.channel.send(message)
+            try:
+                logging.info(f"Sending message: {message}")
+                await self.channel.send(message)
+                logging.info("Message sent successfully!")
+            except Exception as e:
+                logging.error(f"Failed to send message: {e}")
         else:
             logging.error("Channel not found! Please verify the channel ID and permissions.")
 
@@ -107,4 +112,3 @@ def handle_request_title():
             st.warning("Bot is not ready yet. Try again after a moment.")
     elif message == "":
         st.warning("Message cannot be empty.")
-
