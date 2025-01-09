@@ -5,18 +5,14 @@ import threading
 import logging
 from cryptography.hazmat.primitives.asymmetric import rsa, padding
 from cryptography.hazmat.primitives import serialization, hashes
-import time  # Import time module for adding delay
+import time
 
-# Configure logging
 logging.basicConfig(level=logging.INFO)
 
-# Use your verified TextChannel ID
-CHANNEL_ID = 1269107769462755349  # Correct TextChannel ID
+CHANNEL_ID = 1269107769462755349
 
-# Global event to track when the bot is ready
 bot_ready_event = threading.Event()
 
-# Global list to store FishyBot responses
 fishybot_responses = []
 
 class MyClient(discord.Client):
@@ -30,18 +26,18 @@ class MyClient(discord.Client):
     def __init__(self, *args, **kwargs):
         if not hasattr(self, '_initialized'):
             intents = discord.Intents.default()
-            intents.messages = True  # Ensure the bot can receive message events
+            intents.messages = True
             super().__init__(intents=intents, *args, **kwargs)
             self.channel_id = CHANNEL_ID
-            self.channel = None  # To store the channel once fetched
+            self.channel = None
             self._initialized = True
 
     async def on_ready(self):
         logging.info(f'Logged in as {self.user}')
         try:
-            guild = self.guilds[0]  # Assumes the bot is only in one guild
+            guild = self.guilds[0]
             for channel in guild.channels:
-                logging.info(f"Found channel: {channel.name} (ID: {channel.id}) - Type: {type(channel)}")
+                logging.info(f"Found channel: {channel.name} (ID: {channel.id})")
                 if channel.id == self.channel_id and isinstance(channel, discord.TextChannel):
                     self.channel = channel
                     break
@@ -57,12 +53,10 @@ class MyClient(discord.Client):
 
     async def on_message(self, message):
         if message.author.bot and message.author != self.user:
-            # Capture FishyBot's messages and store in global list
             fishybot_responses.append(message.content)
-            logging.info(f"FishyBot response captured: {message.content}")  # Log the captured response
+            logging.info(f"FishyBot response captured: {message.content}")
 
     async def send_message_async(self, message):
-        """Send a message asynchronously"""
         if self.channel:
             try:
                 logging.info(f"Sending message: {message}")
@@ -71,29 +65,25 @@ class MyClient(discord.Client):
             except Exception as e:
                 logging.error(f"Failed to send message: {e}")
         else:
-            logging.error("Text channel not found! Please verify the channel ID and permissions.")
+            logging.error("Text channel not found! Verify the channel ID and permissions.")
 
     def send_message_sync(self, message):
-        """Send a message synchronously (blocking)"""
         if self.channel:
             logging.info(f"Scheduling message: {message}")
             asyncio.run_coroutine_threadsafe(self.send_message_async(message), self.loop)
         else:
-            logging.error("Text channel not found! Please verify the channel ID and permissions.")
+            logging.error("Text channel not found! Verify the channel ID and permissions.")
 
 def decrypt_key():
-    # Load private key from file
     with open("private_key.pem", "rb") as private_file:
         private_key = serialization.load_pem_private_key(
             private_file.read(), 
             password=None,
         )
 
-    # Load the encrypted message from file
     with open("encrypted_message.bin", "rb") as enc_file:
         encrypted_message = enc_file.read()
 
-    # Decrypt the message
     decrypted_message = private_key.decrypt(
         encrypted_message,
         padding.OAEP(
@@ -105,57 +95,53 @@ def decrypt_key():
 
     return decrypted_message.decode()
 
-# Create and run the bot only once
 def run_bot():
-    logging.info("Starting the bot...")
     global client
+    logging.info("Starting the bot...")
     if not hasattr(run_bot, '_client_started'):
         run_bot._client_started = True
         client = MyClient()
-        client.run(decrypt_key())  # This runs the bot and manages its event loop
+        client.run(decrypt_key())
 
 def handle_request_title():
-    """Handle Streamlit UI for title requests."""
     st.title('Request title')
 
-    # Dropdown menu for titles
     title = st.selectbox('Choose Title', options=['justice', 'scientist', 'duke', 'architect'])
     
-    # Dropdown menu for HK or LK
     hk_lk = st.selectbox('Choose HK or LK', options=['hk', 'lk'])
     
-    # Input fields for coordinates
     x_coord = st.text_input('Enter X Coordinate')
     y_coord = st.text_input('Enter Y Coordinate')
 
     if st.button('Send Message') and title and hk_lk and x_coord and y_coord:
         message = f"{title} {hk_lk} {x_coord} {y_coord}"
 
-        # Clear previous responses
         fishybot_responses.clear()
 
-        # Wait for the bot to be ready before sending the message
-        if bot_ready_event.wait(timeout=30):  # Wait up to 30 seconds for the bot to be ready
+        if bot_ready_event.wait(timeout=30):
             client.send_message_sync(message)
             st.success("Message sent successfully!")
 
-            # Add a slight delay for FishyBot's response to be captured
-            time.sleep(2)  # Adjust the delay as needed
+            time.sleep(2)  # Delay to allow the first response to be captured
 
-            # Display FishyBot's response
+            # Display the first FishyBot response
             if fishybot_responses:
-                st.markdown(f"**FishyBot Response**: {fishybot_responses[-1]}")
+                st.markdown(f"**FishyBot First Response**: {fishybot_responses[0]}")
+
+            time.sleep(15)  # Delay for the second response
+
+            # Display the second FishyBot response
+            if len(fishybot_responses) > 1:
+                st.markdown(f"**FishyBot Second Response**: {fishybot_responses[1]}")
             else:
-                st.warning("No response from FishyBot yet.")
+                st.warning("Waiting for the second response from FishyBot...")
+
         else:
             st.warning("Bot is not ready yet. Try again after a moment.")
-    elif not title or not hk_lk or not x_coord or not y_coord:
+    else:
         st.warning("All fields are required.")
 
-# Entry point to run the bot and Streamlit app
 if __name__ == "__main__":
     bot_thread = threading.Thread(target=run_bot, daemon=True)
     bot_thread.start()
     handle_request_title()
-
-
