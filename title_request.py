@@ -9,7 +9,7 @@ from cryptography.hazmat.primitives import serialization, hashes
 logging.basicConfig(level=logging.INFO)
 
 # Replace with your channel ID
-CHANNEL_ID = 1269107769324077255
+CHANNEL_ID = 1269107769462755349  # Ensure this ID is correct
 
 # Global event to track when the bot is ready
 bot_ready_event = threading.Event()
@@ -39,11 +39,19 @@ class MyClient(discord.Client):
         except discord.HTTPException as e:
             logging.error(f"HTTP error occurred: {e}")
 
+    async def send_message_async(self, message):
+        """Send a message asynchronously"""
+        if self.channel:
+            logging.info(f"Sending message: {message}")
+            await self.channel.send(message)
+        else:
+            logging.error("Channel not found! Please verify the channel ID and permissions.")
+
     def send_message_sync(self, message):
         """Send a message synchronously (blocking)"""
         if self.channel:
-            logging.info(f"Sending message: {message}")
-            self.loop.create_task(self.channel.send(message))
+            logging.info(f"Scheduling message: {message}")
+            asyncio.run_coroutine_threadsafe(self.send_message_async(message), self.loop)
         else:
             logging.error("Channel not found! Please verify the channel ID and permissions.")
 
@@ -99,3 +107,4 @@ def handle_request_title():
             st.warning("Bot is not ready yet. Try again after a moment.")
     elif message == "":
         st.warning("Message cannot be empty.")
+
