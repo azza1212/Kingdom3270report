@@ -11,7 +11,7 @@ import time  # Import time module for adding delay
 logging.basicConfig(level=logging.INFO)
 
 # Use your verified TextChannel ID
-CHANNEL_ID = 1269107089894263259  # Correct TextChannel ID
+CHANNEL_ID = 1269107769462755349  # Correct TextChannel ID
 
 # Global event to track when the bot is ready
 bot_ready_event = threading.Event()
@@ -20,7 +20,7 @@ bot_ready_event = threading.Event()
 bot_responses = []
 
 class MyClient(discord.Client):
-    _instance = None  # Singleton instance to ensure only one bot runs
+    _instance = None
 
     def __new__(cls, *args, **kwargs):
         if cls._instance is None:
