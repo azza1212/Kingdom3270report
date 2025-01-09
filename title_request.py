@@ -65,8 +65,7 @@ def decrypt_key():
     # Load private key from file
     with open("private_key.pem", "rb") as private_file:
         private_key = serialization.load_pem_private_key(
-            private_file.read(), 
-            password=None,
+            private_file.read(), password=None
         )
 
     # Load the encrypted message from file
@@ -120,3 +119,4 @@ if __name__ == "__main__":
     bot_thread = threading.Thread(target=run_bot, daemon=True)
     bot_thread.start()
     handle_request_title()
+
