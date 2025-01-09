@@ -126,12 +126,15 @@ def handle_request_title():
     message = st.text_input('')
 
     if st.button('Send Message') and message:
+        # Clear previous responses
+        bot_responses.clear()
+
         # Wait for the bot to be ready before sending the message
         if bot_ready_event.wait(timeout=30):  # Wait up to 30 seconds for the bot to be ready
             client.send_message_sync(message)
             st.success("Message sent successfully!")
 
-            # Display bot response
+            # Wait up to a few seconds for the bot to respond
             if bot_responses:
                 st.markdown(f"**Bot Response**: {bot_responses[-1]}")
             else:
