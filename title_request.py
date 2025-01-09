@@ -69,35 +69,29 @@ def run_bot():
     client = MyClient()
     client.run(decrypt_key())  # This runs the bot and manages its event loop
 
-def main():
-        # Start the bot in a separate thread to avoid blocking Streamlit
-    bot_thread = threading.Thread(target=run_bot, daemon=True)
-    bot_thread.start()
-
+def handle_request_title():
     # Streamlit UI
     st.title('Request title')
 
     # Get message input from the user
-    message = st.text('Please input: <title> <hk/lk> <x> <y>')
-    message = st.text('Example:')
-    message = st.text('justice lk 1533 547')
-    message = st.text('scientist lk 1533 547')
-    message = st.text('duke lk 1533 547')
-    message = st.text('architect lk 1533 547')
+    st.text('Please input: <title> <hk/lk> <x> <y>')
+    st.text('Example:')
+    st.text('justice lk 1533 547')
+    st.text('scientist lk 1533 547')
+    st.text('duke lk 1533 547')
+    st.text('architect lk 1533 547')
     message = st.text_input('')
 
     if st.button('Send Message') and message:
         # Wait for the bot to be ready before sending the message
-        if bot_ready_event.wait(timeout=30):  # Wait up to 10 seconds for the bot to be ready
-            # Now that the bot is ready, send the message synchronously
-            # client = MyClient()  # This should already be running in the background
+        if bot_ready_event.wait(timeout=30):  # Wait up to 30 seconds for the bot to be ready
             client.send_message_sync(message)
             st.success("Message sent successfully!")
         else:
             st.warning("Bot is not ready yet. Try again after a moment.")
-
     elif message == "":
         st.warning("Message cannot be empty.")
+
 
 if __name__ =="__main__":
     main()
