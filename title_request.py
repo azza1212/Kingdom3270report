@@ -1,6 +1,5 @@
 import streamlit as st
 import discord
-import asyncio
 import threading
 import logging
 from cryptography.hazmat.primitives.asymmetric import rsa, padding
@@ -24,20 +23,21 @@ class MyClient(discord.Client):
 
     async def on_ready(self):
         logging.info(f'Logged in as {self.user}')
+        # Print all available channels for debugging
+        for guild in self.guilds:
+            for channel in guild.channels:
+                logging.info(f'Channel: {channel.name} (ID: {channel.id})')
+
         try:
             self.channel = await self.fetch_channel(self.channel_id)
             logging.info(f"Connected to channel: {self.channel.name}")
             bot_ready_event.set()
         except discord.NotFound:
-            logging.error("Channel not found!")
+            logging.error("Channel not found! Please verify the channel ID.")
         except discord.Forbidden:
-            logging.error("Bot doesn't have permission to access the channel!")
+            logging.error("Bot doesn't have permission to access the channel! Please check the channel permissions.")
         except discord.HTTPException as e:
             logging.error(f"HTTP error occurred: {e}")
-
-    async def on_disconnect(self):
-        logging.info("Bot disconnected, attempting to reconnect with delay...")
-        await asyncio.sleep(5)  # Add a delay before reconnecting
 
     def send_message_sync(self, message):
         """Send a message synchronously (blocking)"""
@@ -45,7 +45,7 @@ class MyClient(discord.Client):
             logging.info(f"Sending message: {message}")
             self.loop.create_task(self.channel.send(message))
         else:
-            logging.error("Channel not found!")
+            logging.error("Channel not found! Please verify the channel ID and permissions.")
 
 def decrypt_key():
     # Load private key from file
@@ -99,4 +99,3 @@ def handle_request_title():
             st.warning("Bot is not ready yet. Try again after a moment.")
     elif message == "":
         st.warning("Message cannot be empty.")
-
