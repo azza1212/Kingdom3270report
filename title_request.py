@@ -10,7 +10,7 @@ from cryptography.hazmat.primitives import serialization, hashes
 logging.basicConfig(level=logging.INFO)
 
 # Replace with your channel ID
-CHANNEL_ID = 1269107769462755349  # Ensure this ID is correct
+CHANNEL_ID = 1269107769324077255  # Ensure this ID is correct
 
 # Global event to track when the bot is ready
 bot_ready_event = threading.Event()
