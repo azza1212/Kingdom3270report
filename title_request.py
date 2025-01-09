@@ -2,8 +2,12 @@ import streamlit as st
 import discord
 import asyncio
 import threading
+import logging
 from cryptography.hazmat.primitives.asymmetric import rsa, padding
 from cryptography.hazmat.primitives import serialization, hashes
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
 
 # Replace with your channel ID
 CHANNEL_ID = 1269107769462755349
@@ -19,26 +23,30 @@ class MyClient(discord.Client):
         self.channel = None  # To store the channel once fetched
 
     async def on_ready(self):
-        print(f'Logged in as {self.user}')
+        logging.info(f'Logged in as {self.user}')
         try:
             self.channel = await self.fetch_channel(self.channel_id)
-            print(f"Connected to channel: {self.channel.name}")
+            logging.info(f"Connected to channel: {self.channel.name}")
             bot_ready_event.set()
         except discord.NotFound:
-            print("Channel not found!")
+            logging.error("Channel not found!")
         except discord.Forbidden:
-            print("Bot doesn't have permission to access the channel!")
+            logging.error("Bot doesn't have permission to access the channel!")
         except discord.HTTPException as e:
-            print(f"HTTP error occurred: {e}")
+            logging.error(f"HTTP error occurred: {e}")
+
+    async def on_disconnect(self):
+        logging.info("Bot disconnected, attempting to reconnect with delay...")
+        await asyncio.sleep(5)  # Add a delay before reconnecting
 
     def send_message_sync(self, message):
         """Send a message synchronously (blocking)"""
         if self.channel:
-            # Block the call and send the message
+            logging.info(f"Sending message: {message}")
             self.loop.create_task(self.channel.send(message))
         else:
-            print("Channel not found!")
-        
+            logging.error("Channel not found!")
+
 def decrypt_key():
     # Load private key from file
     with open("private_key.pem", "rb") as private_file:
@@ -91,7 +99,6 @@ def handle_request_title():
             st.warning("Bot is not ready yet. Try again after a moment.")
     elif message == "":
         st.warning("Message cannot be empty.")
-
-
+        
 if __name__ =="__main__":
     main()
