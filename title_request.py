@@ -27,6 +27,7 @@ class MyClient(discord.Client):
         if not hasattr(self, '_initialized'):
             intents = discord.Intents.default()
             intents.messages = True
+            intents.message_content = True  # Update: Enable message content intent
             super().__init__(intents=intents, *args, **kwargs)
             self.channel_id = CHANNEL_ID
             self.channel = None
@@ -53,7 +54,7 @@ class MyClient(discord.Client):
 
     async def on_message(self, message):
         if message.author.bot and message.author != self.user:
-            fishybot_responses.append(message.content)
+            fishybot_responses.append(message)
             logging.info(f"FishyBot response captured: {message.content}")
 
     async def send_message_async(self, message):
@@ -126,13 +127,17 @@ def handle_request_title():
 
             # Display the first FishyBot response
             if fishybot_responses:
-                st.markdown(f"**FishyBot First Response**: {fishybot_responses[0]}")
+                st.markdown(f"**FishyBot First Response**: {fishybot_responses[0].content}")
 
             time.sleep(45)  # Delay for the second response
 
-            # Display the second FishyBot response
+            # Display the second FishyBot response with attachment if any
             if len(fishybot_responses) > 1:
-                st.markdown(f"**FishyBot Second Response**: {fishybot_responses[1]}")
+                second_response = fishybot_responses[1]
+                if second_response.attachments:
+                    for attachment in second_response.attachments:
+                        st.image(attachment.url, caption="FishyBot Second Response")
+                st.markdown(f"**FishyBot Second Response**: {second_response.content}")
             else:
                 st.warning("Waiting for the second response from FishyBot...")
 
