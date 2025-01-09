@@ -5,12 +5,13 @@ import threading
 import logging
 from cryptography.hazmat.primitives.asymmetric import rsa, padding
 from cryptography.hazmat.primitives import serialization, hashes
+import time  # Import time module for adding delay
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 
 # Use your verified TextChannel ID
-CHANNEL_ID = 1269107769462755349  # Correct TextChannel ID
+CHANNEL_ID = 1269107089894263259  # Correct TextChannel ID
 
 # Global event to track when the bot is ready
 bot_ready_event = threading.Event()
@@ -19,7 +20,7 @@ bot_ready_event = threading.Event()
 bot_responses = []
 
 class MyClient(discord.Client):
-    _instance = None
+    _instance = None  # Singleton instance to ensure only one bot runs
 
     def __new__(cls, *args, **kwargs):
         if cls._instance is None:
@@ -58,6 +59,7 @@ class MyClient(discord.Client):
         if message.author == self.user:
             # Capture bot's own messages and store in global list
             bot_responses.append(message.content)
+            logging.info(f"Bot response captured: {message.content}")  # Log the captured response
 
     async def send_message_async(self, message):
         """Send a message asynchronously"""
@@ -134,7 +136,10 @@ def handle_request_title():
             client.send_message_sync(message)
             st.success("Message sent successfully!")
 
-            # Wait up to a few seconds for the bot to respond
+            # Add a slight delay for the bot's response to be captured
+            time.sleep(2)  # Adjust the delay as needed
+
+            # Display bot response
             if bot_responses:
                 st.markdown(f"**Bot Response**: {bot_responses[-1]}")
             else:
