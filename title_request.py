@@ -16,8 +16,8 @@ CHANNEL_ID = 1269107769462755349  # Correct TextChannel ID
 # Global event to track when the bot is ready
 bot_ready_event = threading.Event()
 
-# Global list to store bot responses
-bot_responses = []
+# Global list to store FishyBot responses
+fishybot_responses = []
 
 class MyClient(discord.Client):
     _instance = None
@@ -56,10 +56,10 @@ class MyClient(discord.Client):
             logging.error(f"HTTP error occurred: {e}")
 
     async def on_message(self, message):
-        if message.author == self.user:
-            # Capture bot's own messages and store in global list
-            bot_responses.append(message.content)
-            logging.info(f"Bot response captured: {message.content}")  # Log the captured response
+        if message.author.bot and message.author != self.user:
+            # Capture FishyBot's messages and store in global list
+            fishybot_responses.append(message.content)
+            logging.info(f"FishyBot response captured: {message.content}")  # Log the captured response
 
     async def send_message_async(self, message):
         """Send a message asynchronously"""
@@ -129,21 +129,21 @@ def handle_request_title():
 
     if st.button('Send Message') and message:
         # Clear previous responses
-        bot_responses.clear()
+        fishybot_responses.clear()
 
         # Wait for the bot to be ready before sending the message
         if bot_ready_event.wait(timeout=30):  # Wait up to 30 seconds for the bot to be ready
             client.send_message_sync(message)
             st.success("Message sent successfully!")
 
-            # Add a slight delay for the bot's response to be captured
+            # Add a slight delay for FishyBot's response to be captured
             time.sleep(2)  # Adjust the delay as needed
 
-            # Display bot response
-            if bot_responses:
-                st.markdown(f"**Bot Response**: {bot_responses[-1]}")
+            # Display FishyBot's response
+            if fishybot_responses:
+                st.markdown(f"**FishyBot Response**: {fishybot_responses[-1]}")
             else:
-                st.warning("No response from the bot yet.")
+                st.warning("No response from FishyBot yet.")
         else:
             st.warning("Bot is not ready yet. Try again after a moment.")
     elif message == "":
@@ -154,3 +154,4 @@ if __name__ == "__main__":
     bot_thread = threading.Thread(target=run_bot, daemon=True)
     bot_thread.start()
     handle_request_title()
+
