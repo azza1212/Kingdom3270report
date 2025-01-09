@@ -118,16 +118,19 @@ def handle_request_title():
     """Handle Streamlit UI for title requests."""
     st.title('Request title')
 
-    # Get message input from the user
-    st.text('Please input: <title> <hk/lk> <x> <y>')
-    st.text('Example:')
-    st.text('justice lk 1533 547')
-    st.text('scientist lk 1533 547')
-    st.text('duke lk 1533 547')
-    st.text('architect lk 1533 547')
-    message = st.text_input('')
+    # Dropdown menu for titles
+    title = st.selectbox('Choose Title', options=['justice', 'scientist', 'duke', 'architect'])
+    
+    # Dropdown menu for HK or LK
+    hk_lk = st.selectbox('Choose HK or LK', options=['hk', 'lk'])
+    
+    # Input fields for coordinates
+    x_coord = st.text_input('Enter X Coordinate')
+    y_coord = st.text_input('Enter Y Coordinate')
 
-    if st.button('Send Message') and message:
+    if st.button('Send Message') and title and hk_lk and x_coord and y_coord:
+        message = f"{title} {hk_lk} {x_coord} {y_coord}"
+
         # Clear previous responses
         fishybot_responses.clear()
 
@@ -146,12 +149,13 @@ def handle_request_title():
                 st.warning("No response from FishyBot yet.")
         else:
             st.warning("Bot is not ready yet. Try again after a moment.")
-    elif message == "":
-        st.warning("Message cannot be empty.")
+    elif not title or not hk_lk or not x_coord or not y_coord:
+        st.warning("All fields are required.")
 
 # Entry point to run the bot and Streamlit app
 if __name__ == "__main__":
     bot_thread = threading.Thread(target=run_bot, daemon=True)
     bot_thread.start()
     handle_request_title()
+
 
