@@ -143,25 +143,23 @@ def handle_request_title():
 
             time.sleep(2)  # Delay to allow the first response to be captured
 
-            # Display the first FishyBot response
-            fishybot_first = fishybot_responses[0] if fishybot_responses else None
-            if fishybot_first:
-                st.markdown(f"**FishyBot First Response**: {fishybot_first.content}")
+            # First Response Initialization
+            response_1 = fishybot_responses[0] if fishybot_responses else None
+            if response_1:
+                st.markdown(f"**FishyBot First Response**: {response_1.content}")
 
             time.sleep(45)  # Delay for the second response
 
-            # Wait and display the second FishyBot response with attachment if available
-            fishybot_second = fishybot_responses[1] if len(fishybot_responses) > 1 else None
-            logging.info(f"FishyBot Second Response: {fishybot_second.content if fishybot_second else 'No second response captured'}")
+            # Second Response Initialization
+            response_2 = fishybot_responses[1] if len(fishybot_responses) > 1 else None
+            logging.info(f"FishyBot Second Response: {response_2.content if response_2 else 'No second response captured'}")
 
-            if fishybot_second:
-                # Display attachment if any exists
-                if fishybot_second.attachments:
-                    for attachment in fishybot_second.attachments:
+            if response_2:
+                if response_2.attachments:
+                    for attachment in response_2.attachments:
                         st.image(attachment.url, caption="FishyBot Second Response")
-                    
-                # Display response content without @mention if starts with it
-                response_text = fishybot_second.content.replace(f'@{client.user.id}', '').strip()
+                
+                response_text = response_2.content.replace(f'@{client.user.id}', '').strip()
                 st.markdown(f"**FishyBot Second Response**: {response_text}")
             else:
                 st.warning("Waiting for the second response from FishyBot...")
@@ -175,6 +173,7 @@ if __name__ == "__main__":
     bot_thread = threading.Thread(target=run_bot, daemon=True)
     bot_thread.start()
     handle_request_title()
+
 
 
 
