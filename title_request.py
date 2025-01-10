@@ -31,6 +31,7 @@ class MyClient(discord.Client):
             intents.messages = True
             intents.message_content = True
             intents.guilds = True
+            intents.members = True  # Ensure members intent is added
             super().__init__(intents=intents, *args, **kwargs)
             self.channel_id = CHANNEL_ID
             self.channel = None
@@ -173,6 +174,7 @@ if __name__ == "__main__":
     bot_thread = threading.Thread(target=run_bot, daemon=True)
     bot_thread.start()
     handle_request_title()
+
 
 
 
