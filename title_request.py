@@ -3,8 +3,8 @@ import discord
 import asyncio
 import threading
 import logging
-from cryptography.hazmat.primitives import serialization, hashes, padding
-from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.primitives import serialization, hashes
+from cryptography.hazmat.primitives.asymmetric import rsa, padding
 import time
 
 logging.basicConfig(level=logging.INFO)
@@ -127,9 +127,7 @@ def handle_request_title():
     st.title('Request title')
 
     title = st.selectbox('Choose Title', options=['justice', 'scientist', 'duke', 'architect'])
-    
     hk_lk = st.selectbox('Choose HK or LK', options=['hk', 'lk'])
-    
     x_coord = st.text_input('Enter X Coordinate')
     y_coord = st.text_input('Enter Y Coordinate')
 
@@ -167,5 +165,6 @@ if __name__ == "__main__":
     bot_thread = threading.Thread(target=run_bot, daemon=True)
     bot_thread.start()
     handle_request_title()
+
 
 
