@@ -3,8 +3,8 @@ import discord
 import asyncio
 import threading
 import logging
-from cryptography.hazmat.primitives import serialization, hashes, padding
-from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.primitives import serialization, hashes
+from cryptography.hazmat.primitives.asymmetric import rsa, padding
 import time
 
 logging.basicConfig(level=logging.INFO)
@@ -55,7 +55,7 @@ class MyClient(discord.Client):
     async def on_message(self, message):
         if message.author.bot and message.author != self.user:
             fishybot_responses.append(message)
-            logging.info(f"FishyBot response captured: {message.content} with attachment: {bool(message.attachments)}")
+            logging.info(f"FishyBot response captured: {message.content}")
 
     async def send_message_async(self, message):
         if self.channel:
@@ -79,7 +79,7 @@ def decrypt_key():
     try:
         with open("private_key.pem", "rb") as private_file:
             private_key = serialization.load_pem_private_key(
-                private_file.read(), 
+                private_file.read(),
                 password=None,
             )
         logging.info("Private key loaded successfully.")
@@ -101,7 +101,7 @@ def decrypt_key():
             padding.OAEP(
                 mgf=padding.MGF1(algorithm=hashes.SHA256()),
                 algorithm=hashes.SHA256(),
-                label=None,
+                label=None
             )
         )
     except Exception as e:
@@ -171,4 +171,5 @@ if __name__ == "__main__":
     bot_thread = threading.Thread(target=run_bot, daemon=True)
     bot_thread.start()
     handle_request_title()
+
 
