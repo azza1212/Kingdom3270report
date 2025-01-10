@@ -3,8 +3,9 @@ import discord
 import asyncio
 import threading
 import logging
-from cryptography.hazmat.primitives import serialization, hashes
-from cryptography.hazmat.primitives.asymmetric import rsa, padding
+from cryptography.hazmat.primitives import serialization, hashes, padding
+from cryptography.hazmat.primitives.asymmetric import rsa
+import pyautogui
 import time
 
 logging.basicConfig(level=logging.INFO)
@@ -57,6 +58,9 @@ class MyClient(discord.Client):
             focus_response.append(message)
             logging.info(f"Captured @mention: {message.content}")
 
+            if message.attachments:
+                take_screenshot()
+                attach_screenshot(message)
     async def send_message_async(self, message):
         if self.channel:
             try:
@@ -83,16 +87,16 @@ def decrypt_key():
                 password=None,
             )
         logging.info("Private key loaded successfully.")
-    except FileNotFoundError:
-        logging.error("Private key pem file not found.")
+    except Exception as e:
+        logging.error(f"Failed to load private key: {e}")
         return None
         
     try:
         with open("encrypted_message.bin", "rb") as enc_file:
             encrypted_message = enc_file.read()
         logging.info("Encrypted message loaded successfully.")
-    except FileNotFoundError:
-        logging.error("Encrypted message bin file not found.")
+    except Exception as e:
+        logging.error(f"Failed to load encrypted message: {e}")
         return None
 
     try:
@@ -111,6 +115,11 @@ def decrypt_key():
 
     return decrypted_message.decode()
 
+def take_screenshot():
+    screenshot = pyautogui.screenshot()
+    screenshot.save("FishyBot_mention.png")
+    logging.info("Screenshot captured.")
+
 def run_bot():
     logging.info("Starting the bot...")
     global client
@@ -127,7 +136,9 @@ def handle_request_title():
     st.title('Request title')
 
     title = st.selectbox('Choose Title', options=['justice', 'scientist', 'duke', 'architect'])
+    
     hk_lk = st.selectbox('Choose HK or LK', options=['hk', 'lk'])
+    
     x_coord = st.text_input('Enter X Coordinate')
     y_coord = st.text_input('Enter Y Coordinate')
 
