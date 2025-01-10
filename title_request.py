@@ -3,8 +3,8 @@ import discord
 import asyncio
 import threading
 import logging
-from cryptography.hazmat.primitives import serialization, hashes
-from cryptography.hazmat.primitives.asymmetric import rsa, padding
+from cryptography.hazmat.primitives import serialization, hashes, padding
+from cryptography.hazmat.primitives.asymmetric import rsa
 import time
 
 logging.basicConfig(level=logging.INFO)
@@ -158,7 +158,8 @@ def handle_request_title():
                 if response_2.attachments:
                     for attachment in response_2.attachments:
                         st.image(attachment.url, caption="FishyBot Second Response")
-                
+
+                # Display response content while properly handling @mentions
                 response_text = response_2.content.replace(f'<@{response_2.mentions[0].id}>', '').strip()
                 st.markdown(f"**FishyBot Second Response**: {response_text}")
             else:
@@ -173,6 +174,7 @@ if __name__ == "__main__":
     bot_thread = threading.Thread(target=run_bot, daemon=True)
     bot_thread.start()
     handle_request_title()
+
 
 
 
