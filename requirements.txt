@@ -4,3 +4,4 @@ plotly
 discord.py
 cryptography
 pyautogui
+selenium webdriver-manager
