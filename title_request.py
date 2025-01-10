@@ -10,7 +10,7 @@ from cryptography.hazmat.primitives.asymmetric import rsa, padding
 
 logging.basicConfig(level=logging.INFO)
 
-DISCORD_TOKEN = 'YOUR_DISCORD_BOT_TOKEN'  # Replace with your actual bot token
+DISCORD_TOKEN = 'YOUR_VALID_DISCORD_BOT_TOKEN'  # Replace with your actual bot token
 CHANNEL_ID = 1269107769462755349
 
 bot_ready_event = threading.Event()
@@ -30,6 +30,7 @@ class MyClient(discord.Client):
             intents = discord.Intents.default()
             intents.messages = True
             intents.message_content = True
+            intents.guilds = True
             super().__init__(intents=intents, *args, **kwargs)
             self.channel_id = CHANNEL_ID
             self.channel = None
@@ -55,7 +56,7 @@ class MyClient(discord.Client):
             logging.error(f"HTTP error occurred: {e}")
 
     async def on_message(self, message):
-        if message.author.bot and message.author != self:
+        if message.channel.id == self.channel_id and message.author != self:
             responses.append(message)
             logging.info(f"Response captured: {message.content}")
 
@@ -115,7 +116,7 @@ def decrypt_key():
 
 def fetch_latest_messages(bot_token, channel_id):
     url = f"https://discord.com/api/v10/channels/{channel_id}/messages"
-    headers = {"Authorization": f"Bot {bot_token}"}
+    headers = {"Authorization": f"Bearer {bot_token}"}
     response = requests.get(url, headers=headers)
     
     if response.status_code == 200:
@@ -172,6 +173,7 @@ if __name__ == "__main__":
     bot_thread = threading.Thread(target=run_bot, daemon=True)
     bot_thread.start()
     handle_request_title()
+
 
 
 
