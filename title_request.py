@@ -146,7 +146,7 @@ def handle_request_title():
             if fishybot_responses:
                 st.markdown(f"**FishyBot First Response**: {fishybot_responses[0].content}")
 
-            time.sleep(45)  # Delay for the second response
+            time.sleep(60)  # Increased delay for the second response
 
             # Display the second FishyBot response with attachment if any
             if len(fishybot_responses) > 1:
@@ -175,7 +175,3 @@ if __name__ == "__main__":
     bot_thread = threading.Thread(target=run_bot, daemon=True)
     bot_thread.start()
     handle_request_title()
-
-
-
-
