@@ -109,9 +109,9 @@ def handle_request_title():
     st.title('Request title')
 
     title = st.selectbox('Choose Title', options=['justice', 'scientist', 'duke', 'architect'])
-    
+
     hk_lk = st.selectbox('Choose HK or LK', options=['hk', 'lk'])
-    
+
     x_coord = st.text_input('Enter X Coordinate')
     y_coord = st.text_input('Enter Y Coordinate')
 
@@ -132,13 +132,22 @@ def handle_request_title():
 
             time.sleep(45)  # Delay for the second response
 
-            # Display the second FishyBot response with attachment if any
+            # Overwrite second response
             if len(fishybot_responses) > 1:
                 second_response = fishybot_responses[1]
+                logging.info(f"FishyBot Second Response Content : {second_response.content}")
+
+                # Ensure that the attachment is correctly displayed
+                response_text = second_response.content
+                if response_text.startswith("@"):
+                    response_text = response_text[1:]
+
                 if second_response.attachments:
                     for attachment in second_response.attachments:
                         st.image(attachment.url, caption="FishyBot Second Response")
-                st.markdown(f"**FishyBot Second Response**: {second_response.content}")
+                        st.markdown(f"**FishyBot Second Response**: {attachment.url}\n{response_text}")
+                else:
+                    st.markdown(f"**FishyBot Second Response**: {response_text}")
             else:
                 st.warning("Waiting for the second response from FishyBot...")
 
@@ -151,3 +160,4 @@ if __name__ == "__main__":
     bot_thread = threading.Thread(target=run_bot, daemon=True)
     bot_thread.start()
     handle_request_title()
+
