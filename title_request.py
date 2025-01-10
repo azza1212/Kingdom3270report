@@ -3,8 +3,9 @@ import discord
 import asyncio
 import threading
 import logging
-from cryptography.hazmat.primitives import serialization, hashes
-from cryptography.hazmat.primitives.asymmetric import rsa, padding
+from cryptography.hazmat.primitives import serialization, hashes, padding
+from cryptography.hazmat.primitives.asymmetric import rsa
+import pyautogui
 import time
 
 logging.basicConfig(level=logging.INFO)
@@ -13,7 +14,7 @@ CHANNEL_ID = 1269107769462755349
 
 bot_ready_event = threading.Event()
 
-fishybot_responses_address = []
+focus_response = []
 
 class MyClient(discord.Client):
     _instance = None
@@ -53,9 +54,9 @@ class MyClient(discord.Client):
             logging.error(f"HTTP error occurred: {e}")
 
     async def on_message(self, message):
-        if message.author.bot and message.author != self.user:
-            fishybot_responses_address.append(message)
-            logging.info(f"FishyBot response captured: {message.content}")
+        if message.mentions and self.user in message.mentions:
+            focus_response.append(message)
+            logging.info(f"Mention captured: {message.content}")
 
     async def send_message_async(self, message):
         if self.channel:
@@ -71,8 +72,7 @@ class MyClient(discord.Client):
     def send_message_sync(self, message):
         if self.channel:
             logging.info(f"Scheduling message: {message}")
-            asyncio.run_coroutine_threadsafe(
-                self.send_message_async(message), self.loop)
+            asyncio.run_coroutine_threadsafe(self.send_message_async(message), self.loop)
         else:
             logging.error("Text channel not found! Verify the channel ID and permissions.")
 
@@ -87,7 +87,7 @@ def decrypt_key():
     except FileNotFoundError:
         logging.error("private_key.pem file not found.")
         return None
-
+        
     try:
         with open("encrypted_message.bin", "rb") as enc_file:
             encrypted_message = enc_file.read()
@@ -109,8 +109,12 @@ def decrypt_key():
         logging.error(f"Failed to decrypt message: {e}")
         return None
 
-    logging.info("Decryption successful")
     return decrypted_message.decode()
+
+def take_screenshot():
+    screenshot = pyautogui.screenshot()
+    screenshot.save("FishyBot_mention.png")
+    logging.info("Screenshot captured.")
 
 def run_bot():
     logging.info("Starting the bot...")
@@ -127,8 +131,7 @@ def run_bot():
 def handle_request_title():
     st.title('Request title')
 
-    title = st.selectbox(
-        'Choose Title', options=['justice', 'scientist', 'duke', 'architect'])
+    title = st.selectbox('Choose Title', options=['justice', 'scientist', 'duke', 'architect'])   
     hk_lk = st.selectbox('Choose HK or LK', options=['hk', 'lk'])
     x_coord = st.text_input('Enter X Coordinate')
     y_coord = st.text_input('Enter Y Coordinate')
@@ -136,34 +139,21 @@ def handle_request_title():
     if st.button('Send Message') and title and hk_lk and x_coord and y_coord:
         message = f"{title} {hk_lk} {x_coord} {y_coord}"
 
-        fishybot_responses_address.clear()
+        focus_response.clear()
 
         if bot_ready_event.wait(timeout=30):
             client.send_message_sync(message)
             st.success("Message sent successfully!")
 
-            time.sleep(2)  # Delay to allow the first response to be captured
+            time.sleep(45)  # Delay for the @mention response
 
-            # Display the first FishyBot response
-            if fishybot_responses_address:
-                first_response = fishybot_responses_address[0]
-                st.markdown(f"**FishyBot First Response**: {first_response.content}")
-
-            time.sleep(45)  # Delay for the second response
-
-            # Display the second FishyBot response with attachments if any
-            if len(fishybot_responses_address) > 1:
-                second_response = fishybot_responses_address[1]
-                logging.info(f"FishyBot Second Response: {second_response.content}")
-
-                if second_response.attachments:
-                    for attachment in second_response.attachments:
-                        st.image(attachment.url, caption="FishyBot Second Response")
-
-                response_text = second_response.content.strip()
-                st.markdown(f"**FishyBot Second Response**: {response_text}")
+            if focus_response:
+                latest_mention = focus_response[-1]
+                logging.info(f"Latest @mention: {latest_mention.content}")
+                take_screenshot()
+                st.image("FishyBot_mention.png", caption="FishyBot @mention Response")
             else:
-                st.warning("Waiting for the second response from FishyBot...")
+                st.warning("Waiting for a FishyBot @mention response...")
 
         else:
             st.warning("Bot is not ready yet. Try again after a moment.")
