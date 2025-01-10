@@ -153,7 +153,8 @@ def handle_request_title():
                 second_response = fishybot_responses[1]
 
                 # Split out @mention and any text or image
-                logging.info(f"FishyBot Second Response: {second_response.content if second_response else 'No second response captured'}")
+                logging.debug(f"FishyBot Second Response object: {second_response}")
+                logging.debug(f"FishyBot Second Response content: {second_response.content}")
 
                 response_text = second_response.content.replace(f"<@{second_response.mentions[0].id}>", '').strip() if second_response.mentions else second_response.content
 
@@ -175,3 +176,4 @@ if __name__ == "__main__":
     bot_thread = threading.Thread(target=run_bot, daemon=True)
     bot_thread.start()
     handle_request_title()
+
