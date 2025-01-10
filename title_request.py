@@ -6,6 +6,11 @@ import logging
 from cryptography.hazmat.primitives import serialization, hashes
 from cryptography.hazmat.primitives.asymmetric import rsa, padding
 import time
+import os
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.chrome.options import Options
 
 logging.basicConfig(level=logging.INFO)
 
@@ -123,6 +128,20 @@ def run_bot():
         else:
             logging.error("Bot failed to start. Check the decryption process.")
 
+def take_screenshot():
+    options = Options()
+    options.headless = True
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+    
+    driver.get("https://discord.com/channels/@me")  # Change this URL to your Discord channel if needed
+    time.sleep(3)  # Wait for the page to load
+    
+    screenshot_path = "fishybot_second_response_screenshot.png"
+    driver.save_screenshot(screenshot_path)
+    driver.quit()
+    
+    return screenshot_path
+
 def handle_request_title():
     st.title('Request title')
 
@@ -146,26 +165,13 @@ def handle_request_title():
             if fishybot_responses:
                 st.markdown(f"**FishyBot First Response**: {fishybot_responses[0].content}")
 
-            time.sleep(60)  # Increased delay for the second response
+            time.sleep(45)  # Delay for capturing the screenshot
 
-            # Display the second FishyBot response with attachment if any
-            if len(fishybot_responses) > 1:
-                second_response = fishybot_responses[1]
+            # Capture and display the screenshot
+            screenshot_path = take_screenshot()
+            st.image(screenshot_path, caption="FishyBot Second Response Screenshot")
 
-                # Split out @mention and any text or image
-                logging.debug(f"FishyBot Second Response object: {second_response}")
-                logging.debug(f"FishyBot Second Response content: {second_response.content}")
-
-                response_text = second_response.content.replace(f"<@{second_response.mentions[0].id}>", '').strip() if second_response.mentions else second_response.content
-
-                if second_response.attachments:
-                    for attachment in second_response.attachments:
-                        st.image(attachment.url, caption="FishyBot Second Response")
-
-                st.markdown(f"**FishyBot Second Response**: {response_text}")
-
-            else:
-                st.warning("Waiting for the second response from FishyBot...")
+            logging.info("Screenshot captured and displayed successfully!")
 
         else:
             st.warning("Bot is not ready yet. Try again after a moment.")
@@ -176,4 +182,5 @@ if __name__ == "__main__":
     bot_thread = threading.Thread(target=run_bot, daemon=True)
     bot_thread.start()
     handle_request_title()
+
 
