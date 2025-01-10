@@ -3,8 +3,7 @@ import discord
 import asyncio
 import threading
 import logging
-from cryptography.hazmat.primitives.asymmetric import rsa, padding
-from cryptography.hazmat.primitives import serialization, hashes
+from cryptography.hazmat.primitives import serialization, hashes, rsa, padding
 import time
 
 logging.basicConfig(level=logging.INFO)
@@ -27,8 +26,7 @@ class MyClient(discord.Client):
         if not hasattr(self, '_initialized'):
             intents = discord.Intents.default()
             intents.messages = True
-            intents.message_content = True  # Enabling message content intent
-            intents.guilds = True  # Ensure guild intents are enabled
+            intents.message_content = True
             super().__init__(intents=intents, *args, **kwargs)
             self.channel_id = CHANNEL_ID
             self.channel = None
@@ -98,8 +96,8 @@ def decrypt_key():
     return decrypted_message.decode()
 
 def run_bot():
-    global client
     logging.info("Starting the bot...")
+    global client
     if not hasattr(run_bot, '_client_started'):
         run_bot._client_started = True
         client = MyClient()
@@ -109,9 +107,9 @@ def handle_request_title():
     st.title('Request title')
 
     title = st.selectbox('Choose Title', options=['justice', 'scientist', 'duke', 'architect'])
-
+    
     hk_lk = st.selectbox('Choose HK or LK', options=['hk', 'lk'])
-
+    
     x_coord = st.text_input('Enter X Coordinate')
     y_coord = st.text_input('Enter Y Coordinate')
 
@@ -124,20 +122,17 @@ def handle_request_title():
             client.send_message_sync(message)
             st.success("Message sent successfully!")
 
-            time.sleep(2)  # Delay to allow the first response to be captured
+            time.sleep(2)
 
-            # Display the first FishyBot response
             if fishybot_responses:
                 st.markdown(f"**FishyBot First Response**: {fishybot_responses[0].content}")
 
-            time.sleep(45)  # Delay for the second response
+            time.sleep(45)
 
-            # Overwrite second response
             if len(fishybot_responses) > 1:
                 second_response = fishybot_responses[1]
                 logging.info(f"FishyBot Second Response Content : {second_response.content}")
 
-                # Ensure that the attachment is correctly displayed
                 response_text = second_response.content
                 if response_text.startswith("@"):
                     response_text = response_text[1:]
@@ -145,7 +140,7 @@ def handle_request_title():
                 if second_response.attachments:
                     for attachment in second_response.attachments:
                         st.image(attachment.url, caption="FishyBot Second Response")
-                        st.markdown(f"**FishyBot Second Response**: {attachment.url}\n{response_text}")
+                        st.markdown(f"**FishyBot Second Response**: {attachment.url}\n\n{response_text}")
                 else:
                     st.markdown(f"**FishyBot Second Response**: {response_text}")
             else:
@@ -160,4 +155,5 @@ if __name__ == "__main__":
     bot_thread = threading.Thread(target=run_bot, daemon=True)
     bot_thread.start()
     handle_request_title()
+
 
