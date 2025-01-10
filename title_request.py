@@ -54,7 +54,7 @@ class MyClient(discord.Client):
     async def on_message(self, message):
         if message.author.bot and message.author != self.user:
             fishybot_responses.append(message)
-            logging.info(f"FishyBot response captured: {message.content}")
+            logging.info("FishyBot response captured: {}".format(message.content))  # Log the message content
 
     async def send_message_async(self, message):
         if self.channel:
@@ -75,23 +75,37 @@ class MyClient(discord.Client):
             logging.error("Text channel not found! Verify the channel ID and permissions.")
 
 def decrypt_key():
-    with open("private_key.pem", "rb") as private_file:
-        private_key = serialization.load_pem_private_key(
-            private_file.read(), 
-            password=None,
-        )
+    try:
+        with open("private_key.pem", "rb") as private_file:
+            private_key = serialization.load_pem_private_key(
+                private_file.read(),
+                password=None,
+            )
+        logging.info("Private key loaded successfully.")
+    except FileNotFoundError:
+        logging.error("private_key.pem file not found.")
+        return None
+        
+    try:
+        with open("encrypted_message.bin", "rb") as enc_file:
+            encrypted_message = enc_file.read()
+        logging.info("Encrypted message loaded successfully.")
+    except FileNotFoundError:
+        logging.error("encrypted_message.bin file not found.")
+        return None
 
-    with open("encrypted_message.bin", "rb") as enc_file:
-        encrypted_message = enc_file.read()
-
-    decrypted_message = private_key.decrypt(
-        encrypted_message,
-        padding.OAEP(
-            mgf=padding.MGF1(algorithm=hashes.SHA256()),
-            algorithm=hashes.SHA256(),
-            label=None,
+    try:
+        decrypted_message = private_key.decrypt(
+            encrypted_message,
+            padding.OAEP(
+                mgf=padding.MGF1(algorithm=hashes.SHA256()),
+                algorithm=hashes.SHA256(),
+                label=None,
+            )
         )
-    )
+    except Exception as e:
+        logging.error(f"Failed to decrypt message: {e}")
+        return None
 
     return decrypted_message.decode()
 
@@ -101,7 +115,11 @@ def run_bot():
     if not hasattr(run_bot, '_client_started'):
         run_bot._client_started = True
         client = MyClient()
-        client.run(decrypt_key())
+        decrypted_key = decrypt_key()
+        if decrypted_key:
+            client.run(decrypted_key)
+        else:
+            logging.error("Bot failed to start. Check the decryption process.")
 
 def handle_request_title():
     st.title('Request title')
@@ -122,13 +140,15 @@ def handle_request_title():
             client.send_message_sync(message)
             st.success("Message sent successfully!")
 
-            time.sleep(2)
+            time.sleep(2)  # Delay to allow the first response to be captured
 
+            # Display the first FishyBot response
             if fishybot_responses:
                 st.markdown(f"**FishyBot First Response**: {fishybot_responses[0].content}")
 
-            time.sleep(45)
+            time.sleep(45)  # Delay for the second response
 
+            # Overwrite second response
             if len(fishybot_responses) > 1:
                 second_response = fishybot_responses[1]
                 logging.info(f"FishyBot Second Response Content : {second_response.content}")
@@ -155,5 +175,3 @@ if __name__ == "__main__":
     bot_thread = threading.Thread(target=run_bot, daemon=True)
     bot_thread.start()
     handle_request_title()
-
-
