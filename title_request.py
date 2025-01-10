@@ -3,18 +3,19 @@ import streamlit as st
 import asyncio
 import threading
 import logging
+import time
+import requests
 from cryptography.hazmat.primitives import serialization, hashes
 from cryptography.hazmat.primitives.asymmetric import rsa, padding
-import time
-from streamlit.components.v1 import html
 
 logging.basicConfig(level=logging.INFO)
 
+DISCORD_TOKEN = 'YOUR_DISCORD_BOT_TOKEN'  # Replace with your bot token
 CHANNEL_ID = 1269107769462755349
 
 bot_ready_event = threading.Event()
 
-fishybot_responses = []
+responses = []
 
 class MyClient(discord.Client):
     _instance = None
@@ -55,8 +56,8 @@ class MyClient(discord.Client):
 
     async def on_message(self, message):
         if message.author.bot and message.author != self.user:
-            fishybot_responses.append(message)
-            logging.info(f"FishyBot response captured: {message.content}")
+            responses.append(message)
+            logging.info(f"Response captured: {message.content}")
 
     async def send_message_async(self, message):
         if self.channel:
@@ -112,6 +113,17 @@ def decrypt_key():
 
     return decrypted_message.decode()
 
+def fetch_latest_messages(bot_token, channel_id):
+    url = f"https://discord.com/api/v10/channels/{channel_id}/messages"
+    headers = {"Authorization": f"Bot {bot_token}"}
+    response = requests.get(url, headers=headers)
+    
+    if response.status_code == 200:
+        return response.json()
+    else:
+        logging.error(f"Failed to fetch messages: {response.status_code} {response.text}")
+        return []
+
 def run_bot():
     logging.info("Starting the bot...")
     global client
@@ -124,12 +136,6 @@ def run_bot():
         else:
             logging.error("Bot failed to start. Check the decryption process.")
 
-def capture_discord_channel():
-    st.components.v1.html("""
-    <iframe src="https://discord.com/channels/@me" width="100%" height="500"></iframe>
-    """)
-    return "Discord channel's embedded content should be visible below."
-
 def handle_request_title():
     st.title('Request title')
 
@@ -141,7 +147,7 @@ def handle_request_title():
     if st.button('Send Message') and title and hk_lk and x_coord and y_coord:
         message = f"{title} {hk_lk} {x_coord} {y_coord}"
 
-        fishybot_responses.clear()
+        responses.clear()
 
         if bot_ready_event.wait(timeout=30):
             client.send_message_sync(message)
@@ -149,17 +155,13 @@ def handle_request_title():
 
             time.sleep(2)  # Delay to allow the first response to be captured
 
-            # Display the first FishyBot response
-            if fishybot_responses:
-                st.markdown(f"**FishyBot First Response**: {fishybot_responses[0].content}")
+            # Fetch and display the latest messages from the channel
+            latest_messages = fetch_latest_messages(DISCORD_TOKEN, CHANNEL_ID)
+            
+            for msg in latest_messages:
+                st.markdown(f"**{msg['author']['username']}**: {msg['content']}")
 
-            time.sleep(45)  # Delay for capturing
-
-            # Capture and display the content
-            content_path = capture_discord_channel()
-            st.write(content_path)  # Display the embedded content
-
-            logging.info("Discord channel content captured and displayed successfully!")
+            logging.info("Messages fetched and displayed successfully!")
 
         else:
             st.warning("Bot is not ready yet. Try again after a moment.")
@@ -170,5 +172,6 @@ if __name__ == "__main__":
     bot_thread = threading.Thread(target=run_bot, daemon=True)
     bot_thread.start()
     handle_request_title()
+
 
 
