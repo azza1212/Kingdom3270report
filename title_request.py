@@ -2,7 +2,6 @@ import streamlit as st
 import discord
 import asyncio
 import threading
-import pyautogui
 import logging
 from cryptography.hazmat.primitives import serialization, hashes, padding
 from cryptography.hazmat.primitives.asymmetric import rsa
