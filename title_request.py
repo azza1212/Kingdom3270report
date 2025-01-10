@@ -27,7 +27,8 @@ class MyClient(discord.Client):
         if not hasattr(self, '_initialized'):
             intents = discord.Intents.default()
             intents.messages = True
-            intents.message_content = True  # Update: Enable message content intent
+            intents.message_content = True  # Enabling message content intent
+            intents.guilds = True  # Ensure guild intents are enabled
             super().__init__(intents=intents, *args, **kwargs)
             self.channel_id = CHANNEL_ID
             self.channel = None
