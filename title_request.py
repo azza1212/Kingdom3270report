@@ -1,11 +1,10 @@
-import streamlit as st
 import discord
+import streamlit as st
 import asyncio
 import threading
 import logging
-from cryptography.hazmat.primitives import serialization, hashes, padding
-from cryptography.hazmat.primitives.asymmetric import rsa
-import pyautogui
+from cryptography.hazmat.primitives import serialization, hashes
+from cryptography.hazmat.primitives.asymmetric import rsa, padding
 import time
 
 logging.basicConfig(level=logging.INFO)
@@ -14,7 +13,7 @@ CHANNEL_ID = 1269107769462755349
 
 bot_ready_event = threading.Event()
 
-focus_response = []
+fishybot_responses = []
 
 class MyClient(discord.Client):
     _instance = None
@@ -49,18 +48,15 @@ class MyClient(discord.Client):
             else:
                 logging.error("Text channel with the specified ID not found!")
         except discord.Forbidden:
-            logging.error("Bot doesn't have permission to access the channels! Please check the channel permissions.")
+            logging.error("The bot doesn't have permission to access the channels! Please check the channel permissions.")
         except discord.HTTPException as e:
             logging.error(f"HTTP error occurred: {e}")
 
     async def on_message(self, message):
-        if self.user in message.mentions:
-            focus_response.append(message)
-            logging.info(f"Captured @mention: {message.content}")
+        if message.author.bot and message.author != self.user:
+            fishybot_responses.append(message)
+            logging.info(f"FishyBot response captured: {message.content}")
 
-            if message.attachments:
-                take_screenshot()
-                attach_screenshot(message)
     async def send_message_async(self, message):
         if self.channel:
             try:
@@ -83,20 +79,20 @@ def decrypt_key():
     try:
         with open("private_key.pem", "rb") as private_file:
             private_key = serialization.load_pem_private_key(
-                private_file.read(),
-                password=None,
+                private_file.read(), 
+                password=None
             )
         logging.info("Private key loaded successfully.")
-    except Exception as e:
-        logging.error(f"Failed to load private key: {e}")
+    except FileNotFoundError:
+        logging.error("private_key.pem file not found.")
         return None
         
     try:
         with open("encrypted_message.bin", "rb") as enc_file:
             encrypted_message = enc_file.read()
         logging.info("Encrypted message loaded successfully.")
-    except Exception as e:
-        logging.error(f"Failed to load encrypted message: {e}")
+    except FileNotFoundError:
+        logging.error("encrypted_message.bin file not found.")
         return None
 
     try:
@@ -115,11 +111,6 @@ def decrypt_key():
 
     return decrypted_message.decode()
 
-def take_screenshot():
-    screenshot = pyautogui.screenshot()
-    screenshot.save("FishyBot_mention.png")
-    logging.info("Screenshot captured.")
-
 def run_bot():
     logging.info("Starting the bot...")
     global client
@@ -136,36 +127,44 @@ def handle_request_title():
     st.title('Request title')
 
     title = st.selectbox('Choose Title', options=['justice', 'scientist', 'duke', 'architect'])
-    
     hk_lk = st.selectbox('Choose HK or LK', options=['hk', 'lk'])
-    
     x_coord = st.text_input('Enter X Coordinate')
     y_coord = st.text_input('Enter Y Coordinate')
 
     if st.button('Send Message') and title and hk_lk and x_coord and y_coord:
         message = f"{title} {hk_lk} {x_coord} {y_coord}"
 
-        focus_response.clear()
+        fishybot_responses.clear()
 
         if bot_ready_event.wait(timeout=30):
             client.send_message_sync(message)
             st.success("Message sent successfully!")
 
-            time.sleep(45)  # Delay for the @mention response
+            time.sleep(2)  # Delay to allow the first response to be captured
 
-            if focus_response:
-                latest_mention = focus_response[-1]
-                logging.info(f"Latest @mention: {latest_mention.content}")
+            # Display the first FishyBot response
+            if fishybot_responses:
+                st.markdown(f"**FishyBot First Response**: {fishybot_responses[0].content}")
 
-                # Display response content while properly handling @mentions
-                response_text = latest_mention.content.replace(f"<@{latest_mention.mentions[0].id}>", '').strip() if latest_mention.mentions else latest_mention.content
-                st.markdown(f"**FishyBot @mention Response Content**: {response_text}")
+            time.sleep(45)  # Delay for the second response
 
-                if latest_mention.attachments:
-                    for attachment in latest_mention.attachments:
-                        st.image(attachment.url, caption="FishyBot @mention Response Image")
+            # Display the second FishyBot response with attachment if any
+            if len(fishybot_responses) > 1:
+                second_response = fishybot_responses[1]
+
+                # Split out @mention and any text or image
+                logging.info(f"FishyBot Second Response: {second_response.content if second_response else 'No second response captured'}")
+
+                response_text = second_response.content.replace(f"<@{second_response.mentions[0].id}>", '').strip() if second_response.mentions else second_response.content
+
+                if second_response.attachments:
+                    for attachment in second_response.attachments:
+                        st.image(attachment.url, caption="FishyBot Second Response")
+
+                st.markdown(f"**FishyBot Second Response**: {response_text}")
+
             else:
-                st.warning("Waiting for a FishyBot @mention response...")
+                st.warning("Waiting for the second response from FishyBot...")
 
         else:
             st.warning("Bot is not ready yet. Try again after a moment.")
@@ -176,6 +175,7 @@ if __name__ == "__main__":
     bot_thread = threading.Thread(target=run_bot, daemon=True)
     bot_thread.start()
     handle_request_title()
+
 
 
 
