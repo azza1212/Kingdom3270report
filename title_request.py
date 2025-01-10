@@ -6,11 +6,6 @@ import logging
 from cryptography.hazmat.primitives import serialization, hashes
 from cryptography.hazmat.primitives.asymmetric import rsa, padding
 import time
-import os
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from webdriver_manager.chrome import ChromeDriverManager
-from selenium.webdriver.chrome.options import Options
 
 logging.basicConfig(level=logging.INFO)
 
@@ -129,18 +124,10 @@ def run_bot():
             logging.error("Bot failed to start. Check the decryption process.")
 
 def take_screenshot():
-    options = Options()
-    options.headless = True
-    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
-    
-    driver.get("https://discord.com/channels/@me")  # Change this URL to your Discord channel if needed
-    time.sleep(3)  # Wait for the page to load
-    
-    screenshot_path = "fishybot_second_response_screenshot.png"
-    driver.save_screenshot(screenshot_path)
-    driver.quit()
-    
-    return screenshot_path
+    st.components.v1.html("""
+    <iframe src="https://discord.com/channels/@me" width="100%" height="500"></iframe>
+    """)
+    return "Screenshot captured via Streamlit component"
 
 def handle_request_title():
     st.title('Request title')
@@ -169,7 +156,7 @@ def handle_request_title():
 
             # Capture and display the screenshot
             screenshot_path = take_screenshot()
-            st.image(screenshot_path, caption="FishyBot Second Response Screenshot")
+            st.write(screenshot_path)  # Display screenshot path or embedded content
 
             logging.info("Screenshot captured and displayed successfully!")
 
@@ -182,5 +169,3 @@ if __name__ == "__main__":
     bot_thread = threading.Thread(target=run_bot, daemon=True)
     bot_thread.start()
     handle_request_title()
-
-
