@@ -5,7 +5,6 @@ import threading
 import logging
 from cryptography.hazmat.primitives import serialization, hashes, padding
 from cryptography.hazmat.primitives.asymmetric import rsa
-import pyautogui
 import time
 
 logging.basicConfig(level=logging.INFO)
@@ -54,9 +53,9 @@ class MyClient(discord.Client):
             logging.error(f"HTTP error occurred: {e}")
 
     async def on_message(self, message):
-        if message.mentions and self.user in message.mentions:
+        if self.user in message.mentions:
             focus_response.append(message)
-            logging.info(f"Mention captured: {message.content}")
+            logging.info(f"Captured @mention: {message.content}")
 
     async def send_message_async(self, message):
         if self.channel:
@@ -85,7 +84,7 @@ def decrypt_key():
             )
         logging.info("Private key loaded successfully.")
     except FileNotFoundError:
-        logging.error("private_key.pem file not found.")
+        logging.error("Private key pem file not found.")
         return None
         
     try:
@@ -93,7 +92,7 @@ def decrypt_key():
             encrypted_message = enc_file.read()
         logging.info("Encrypted message loaded successfully.")
     except FileNotFoundError:
-        logging.error("encrypted_message.bin file not found.")
+        logging.error("Encrypted message bin file not found.")
         return None
 
     try:
@@ -105,16 +104,12 @@ def decrypt_key():
                 label=None
             )
         )
+        logging.info("Decryption successful.")
     except Exception as e:
         logging.error(f"Failed to decrypt message: {e}")
         return None
 
     return decrypted_message.decode()
-
-def take_screenshot():
-    screenshot = pyautogui.screenshot()
-    screenshot.save("FishyBot_mention.png")
-    logging.info("Screenshot captured.")
 
 def run_bot():
     logging.info("Starting the bot...")
@@ -131,8 +126,10 @@ def run_bot():
 def handle_request_title():
     st.title('Request title')
 
-    title = st.selectbox('Choose Title', options=['justice', 'scientist', 'duke', 'architect'])   
+    title = st.selectbox('Choose Title', options=['justice', 'scientist', 'duke', 'architect'])
+    
     hk_lk = st.selectbox('Choose HK or LK', options=['hk', 'lk'])
+    
     x_coord = st.text_input('Enter X Coordinate')
     y_coord = st.text_input('Enter Y Coordinate')
 
@@ -150,8 +147,14 @@ def handle_request_title():
             if focus_response:
                 latest_mention = focus_response[-1]
                 logging.info(f"Latest @mention: {latest_mention.content}")
-                take_screenshot()
-                st.image("FishyBot_mention.png", caption="FishyBot @mention Response")
+
+                # Display response content while properly handling @mentions
+                response_text = latest_mention.content.replace(f"<@{latest_mention.mentions[0].id}>", '').strip() if latest_mention.mentions else latest_mention.content
+                st.markdown(f"**FishyBot @mention Response Content**: {response_text}")
+
+                if latest_mention.attachments:
+                    for attachment in latest_mention.attachments:
+                        st.image(attachment.url, caption="FishyBot @mention Response Image")
             else:
                 st.warning("Waiting for a FishyBot @mention response...")
 
@@ -164,4 +167,5 @@ if __name__ == "__main__":
     bot_thread = threading.Thread(target=run_bot, daemon=True)
     bot_thread.start()
     handle_request_title()
+
 
