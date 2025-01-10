@@ -3,9 +3,8 @@ import streamlit as st
 import asyncio
 import threading
 import logging
-from cryptography.hazmat.primitives import serialization, hashes
-from cryptography.hazmat.primitives.asymmetric import rsa, padding
 import time
+from streamlit.components.v1 import html
 
 logging.basicConfig(level=logging.INFO)
 
@@ -123,11 +122,11 @@ def run_bot():
         else:
             logging.error("Bot failed to start. Check the decryption process.")
 
-def take_screenshot():
+def capture_discord_channel():
     st.components.v1.html("""
     <iframe src="https://discord.com/channels/@me" width="100%" height="500"></iframe>
     """)
-    return "Screenshot captured via Streamlit component"
+    return "Discord channel's embedded content should be visible below."
 
 def handle_request_title():
     st.title('Request title')
@@ -152,13 +151,13 @@ def handle_request_title():
             if fishybot_responses:
                 st.markdown(f"**FishyBot First Response**: {fishybot_responses[0].content}")
 
-            time.sleep(45)  # Delay for capturing the screenshot
+            time.sleep(45)  # Delay for capturing
 
-            # Capture and display the screenshot
-            screenshot_path = take_screenshot()
-            st.write(screenshot_path)  # Display screenshot path or embedded content
+            # Capture and display the content
+            content_path = capture_discord_channel()
+            st.write(content_path)  # Display the embedded content
 
-            logging.info("Screenshot captured and displayed successfully!")
+            logging.info("Discord channel content captured and displayed successfully!")
 
         else:
             st.warning("Bot is not ready yet. Try again after a moment.")
@@ -169,3 +168,4 @@ if __name__ == "__main__":
     bot_thread = threading.Thread(target=run_bot, daemon=True)
     bot_thread.start()
     handle_request_title()
+
