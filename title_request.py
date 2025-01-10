@@ -139,26 +139,31 @@ def handle_request_title():
 
         if bot_ready_event.wait(timeout=30):
             client.send_message_sync(message)
-            st.spinner("Sending message...")
             st.success("Message sent successfully!")
 
             time.sleep(2)  # Delay to allow the first response to be captured
 
             # Display the first FishyBot response
-            if len(fishybot_responses) > 0:
+            if fishybot_responses:
                 st.markdown(f"**FishyBot First Response**: {fishybot_responses[0].content}")
 
             time.sleep(45)  # Delay for the second response
 
-            # Check and display the second response with attachments
+            # Display the second FishyBot response with attachment if any
             if len(fishybot_responses) > 1:
                 second_response = fishybot_responses[1]
-                logging.info(f"FishyBot Second Response Content: {second_response.content}")
+                logging.info(f"FishyBot Second Response Content : {second_response.content}")
+
+                response_text = second_response.content
+                if response_text.startswith("@"):
+                    response_text = response_text[1:]
 
                 if second_response.attachments:
                     for attachment in second_response.attachments:
                         st.image(attachment.url, caption="FishyBot Second Response")
-                        st.markdown(f"**FishyBot Response Content**: {second_response.content}\n**Attachments**: {attachment.url}")
+                        st.markdown(f"**FishyBot Second Response**: {attachment.url}\n{response_text}")
+                else:
+                    st.markdown(f"**FishyBot Second Response**: {response_text}")
             else:
                 st.warning("Waiting for the second response from FishyBot...")
 
@@ -171,5 +176,6 @@ if __name__ == "__main__":
     bot_thread = threading.Thread(target=run_bot, daemon=True)
     bot_thread.start()
     handle_request_title()
+
 
 
