@@ -13,14 +13,14 @@ CHANNEL_ID = 1269107769462755349
 
 bot_ready_event = threading.Event()
 
-fishybot_responses = []
+captured_responses = []
 
-class MyClient(discord.Client):
+class CustomClient(discord.Client):
     _instance = None
 
     def __new__(cls, *args, **kwargs):
         if cls._instance is None:
-            cls._instance = super(MyClient, cls).__new__(cls)
+            cls._instance = super(CustomClient, cls).__new__(cls)
         return cls._instance
 
     def __init__(self, *args, **kwargs):
@@ -54,7 +54,7 @@ class MyClient(discord.Client):
 
     async def on_message(self, message):
         if message.author.bot and message.author != self.user:
-            fishybot_responses.append(message)
+            captured_responses.append(message)
             logging.info(f"FishyBot response captured: {message.content}")
 
     async def send_message_async(self, message):
@@ -84,7 +84,7 @@ def decrypt_key():
             )
         logging.info("Private key loaded successfully.")
     except FileNotFoundError:
-        logging.error("private_key.pem file not found.")
+        logging.error("Private key file not found.")
         return None
         
     try:
@@ -92,7 +92,7 @@ def decrypt_key():
             encrypted_message = enc_file.read()
         logging.info("Encrypted message loaded successfully.")
     except FileNotFoundError:
-        logging.error("encrypted_message.bin file not found.")
+        logging.error("Encrypted message file not found.")
         return None
 
     try:
@@ -104,6 +104,7 @@ def decrypt_key():
                 label=None
             )
         )
+        logging.info("Decryption successful.")
     except Exception as e:
         logging.error(f"Failed to decrypt message: {e}")
         return None
@@ -115,7 +116,7 @@ def run_bot():
     global client
     if not hasattr(run_bot, '_client_started'):
         run_bot._client_started = True
-        client = MyClient()
+        client = CustomClient()
         decrypted_key = decrypt_key()
         if decrypted_key:
             client.run(decrypted_key)
@@ -135,7 +136,7 @@ def handle_request_title():
     if st.button('Send Message') and title and hk_lk and x_coord and y_coord:
         message = f"{title} {hk_lk} {x_coord} {y_coord}"
 
-        fishybot_responses.clear()
+        captured_responses.clear()
 
         if bot_ready_event.wait(timeout=30):
             client.send_message_sync(message)
@@ -143,23 +144,23 @@ def handle_request_title():
 
             time.sleep(2)  # Delay to allow the first response to be captured
 
-            # First Response Initialization
-            response_1 = fishybot_responses[0] if fishybot_responses else None
-            if response_1:
-                st.markdown(f"**FishyBot First Response**: {response_1.content}")
+            # Display the first FishyBot response
+            if captured_responses:
+                first_response = captured_responses[0]
+                st.markdown(f"**FishyBot First Response**: {first_response.content}")
 
             time.sleep(45)  # Delay for the second response
 
-            # Second Response Initialization
-            response_2 = fishybot_responses[1] if len(fishybot_responses) > 1 else None
-            logging.info(f"FishyBot Second Response: {response_2.content if response_2 else 'No second response captured'}")
+            # Display the second FishyBot response with attachments if any
+            if len(captured_responses) > 1:
+                second_response = captured_responses[1]
+                logging.info(f"FishyBot Second Response: {second_response.content}")
 
-            if response_2:
-                if response_2.attachments:
-                    for attachment in response_2.attachments:
+                if second_response.attachments:
+                    for attachment in second_response.attachments:
                         st.image(attachment.url, caption="FishyBot Second Response")
                 
-                response_text = response_2.content.replace(f'@{client.user.id}', '').strip()
+                response_text = second_response.content.replace(f'@{client.user.id}', '').strip()
                 st.markdown(f"**FishyBot Second Response**: {response_text}")
             else:
                 st.warning("Waiting for the second response from FishyBot...")
@@ -173,6 +174,7 @@ if __name__ == "__main__":
     bot_thread = threading.Thread(target=run_bot, daemon=True)
     bot_thread.start()
     handle_request_title()
+
 
 
 
