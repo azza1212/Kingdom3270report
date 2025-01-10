@@ -10,7 +10,7 @@ from cryptography.hazmat.primitives.asymmetric import rsa, padding
 
 logging.basicConfig(level=logging.INFO)
 
-DISCORD_TOKEN = 'YOUR_DISCORD_BOT_TOKEN'  # Replace with your bot token
+DISCORD_TOKEN = 'YOUR_DISCORD_BOT_TOKEN'  # Replace with your actual bot token
 CHANNEL_ID = 1269107769462755349
 
 bot_ready_event = threading.Event()
@@ -55,7 +55,7 @@ class MyClient(discord.Client):
             logging.error(f"HTTP error occurred: {e}")
 
     async def on_message(self, message):
-        if message.author.bot and message.author != self.user:
+        if message.author.bot and message.author != self:
             responses.append(message)
             logging.info(f"Response captured: {message.content}")
 
