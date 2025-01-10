@@ -3,7 +3,8 @@ import discord
 import asyncio
 import threading
 import logging
-from cryptography.hazmat.primitives import serialization, hashes, rsa, padding
+from cryptography.hazmat.primitives import serialization, hashes, padding
+from cryptography.hazmat.primitives.asymmetric import rsa
 import time
 
 logging.basicConfig(level=logging.INFO)
@@ -54,7 +55,7 @@ class MyClient(discord.Client):
     async def on_message(self, message):
         if message.author.bot and message.author != self.user:
             fishybot_responses.append(message)
-            logging.info("FishyBot response captured: {}".format(message.content))  # Log the message content
+            logging.info("FishyBot response captured: {}".format(message.content))
 
     async def send_message_async(self, message):
         if self.channel:
@@ -175,3 +176,4 @@ if __name__ == "__main__":
     bot_thread = threading.Thread(target=run_bot, daemon=True)
     bot_thread.start()
     handle_request_title()
+
